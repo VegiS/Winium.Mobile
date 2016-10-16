@@ -11,10 +11,5 @@
                 var result = this.EvaluateAtom(environment, this.Atom, Script, new object[] { }, environment.CreateFrameObject());
                 return result;
             }
-
-        public GetPageSourceCommandHandler(WebContext context, string atom)
-            : base(context, atom)
-        {
-        }
     }
 }

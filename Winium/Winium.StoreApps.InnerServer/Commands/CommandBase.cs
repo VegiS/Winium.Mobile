@@ -15,7 +15,18 @@
 
     #endregion
 
-    internal abstract class CommandBase
+    internal interface ICommandBase
+    {
+        string Do();
+
+        Automator Automator { get; set; }
+
+        IDictionary<string, JToken> Parameters { get; set; }
+
+        string Session { get; set; }
+    }
+
+    internal abstract class CommandBase : ICommandBase
     {
         #region Public Properties
 
@@ -74,6 +85,7 @@
             Exception exception = null;
 
             // TODO Research dispatcher.RunIdleAsync
+
             dispatcher.RunAsync(
                 CoreDispatcherPriority.Normal, 
                 () =>

@@ -53,9 +53,15 @@
                         IsEnabled="False"
                         AutomationProperties.AutomationId="DisabledBtn" />
                 <TextBox InputScope="Number" AutomationProperties.AutomationId="NumericInput"/>
-                <WebView Height="200" DefaultBackgroundColor="Azure" Source="http://google.com"></WebView>
             </StackPanel>
         </PivotItem>
+        <PivotItem Header="third">
+            <StackPanel>
+                <WebView Height="400"
+                         DefaultBackgroundColor="Azure" 
+                         Source="https://httpbin.org/"></WebView>
+            </StackPanel>
+            </PivotItem>
     </Pivot>
     <Page.BottomAppBar>
         <CommandBar AutomationProperties.AutomationId="BottomAppBar" Opened="AppBarOnOpened" Closed="AppBarOnClosed">

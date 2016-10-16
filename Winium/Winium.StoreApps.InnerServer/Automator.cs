@@ -4,7 +4,10 @@
 
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     using Windows.UI.Core;
     using Windows.UI.Xaml;
@@ -13,6 +16,7 @@
     using Newtonsoft.Json.Linq;
 
     using Winium.StoreApps.Common;
+    using Winium.StoreApps.Common.Exceptions;
     using Winium.StoreApps.InnerServer.Commands;
     using Winium.StoreApps.InnerServer.Web.Commands;
 
@@ -73,7 +77,7 @@
                 elementId = elementIdObject.ToString();
             }
 
-            CommandBase commandToExecute = null;
+            ICommandBase commandToExecute = null;
 
             if (command.Equals("ping"))
             {
@@ -91,24 +95,9 @@
 
             if (commandToExecute == null)
             {
-                if (this.CurrentContext == ContextsRegistry.NativeAppContext)
-                {
-                    commandToExecute = GetNativeAppCommandToExecute(command, elementId, parameters);
-                }
-                else
-                {
-                    var webElement = this.ContextsRegistry.GetContext(this.CurrentContext);
-
-                    if (command.Equals(DriverCommand.GetPageSource))
-                    {
-
-                        commandToExecute = new GetPageSourceCommandHandler(webElement, requestData.Atom);
-                    }
-                    else
-                    {
-                        throw new NotImplementedException("Not implemented: " + command);
-                    }
-                }
+                commandToExecute = this.CurrentContext == ContextsRegistry.NativeAppContext
+                                       ? GetNativeAppCommandToExecute(command, elementId, parameters)
+                                       : this.GetWebCommandToExecute(requestData);
             }
 
             JToken sessionIdObject;
@@ -125,7 +114,41 @@
             return response;
         }
 
-        private static CommandBase GetNativeAppCommandToExecute(
+        private ICommandBase GetWebCommandToExecute(Command request)
+        {
+            var command = request.Name;
+            WebCommandHandler commandToExecute;
+
+            var context = this.ContextsRegistry.GetContext(this.CurrentContext);
+
+            if (command.Equals(DriverCommand.GetPageSource))
+            {
+                commandToExecute = new GetPageSourceCommandHandler();
+            }
+            else if (command.Equals(DriverCommand.FindElement))
+            {
+                commandToExecute = new FindElementCommandHandler();
+            }
+            else if (command.Equals(DriverCommand.GetElementText))
+            {
+                commandToExecute = new GetElementTextCommandHandler();
+            }
+            else if (command.Equals(DriverCommand.GetTitle))
+            {
+                commandToExecute = new GetTitleCommandHandler();
+            }
+            else
+            {
+                throw new NotImplementedException("Not implemented: " + command);
+            }
+
+            commandToExecute.Atom = request.Atom;
+            commandToExecute.Context = context;
+
+            return commandToExecute;
+        }
+
+        private static ICommandBase GetNativeAppCommandToExecute(
             string command,
             string elementId,
             IDictionary<string, JToken> parameters)

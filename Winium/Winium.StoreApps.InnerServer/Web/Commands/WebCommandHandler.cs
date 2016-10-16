@@ -1,33 +1,60 @@
 ﻿namespace Winium.StoreApps.InnerServer.Web.Commands
 {
+    #region
+
     using System;
     using System.Collections.Generic;
-    using System.Globalization;
     using System.Text;
     using System.Threading;
 
     using Windows.UI.Core;
 
     using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
 
     using Winium.StoreApps.Common;
     using Winium.StoreApps.Common.Exceptions;
     using Winium.StoreApps.InnerServer.Commands;
-    using Winium.StoreApps.InnerServer.Web;
 
-    internal abstract class WebCommandHandler : CommandBase
+    #endregion
+
+    internal abstract class WebCommandHandler : ICommandBase
     {
-        public WebContext Context { get; private set; }
+        private TimeSpan atomExecutionTimeout = TimeSpan.FromMilliseconds(-1);
 
-        public string Atom { get; private set; }
+        public WebContext Context { get; set; }
 
-        public WebCommandHandler(WebContext context, string atom)
+        public string Atom { get; set; }
+
+        public string Do()
         {
-            this.Context = context;
-            this.Atom = atom;
+            if (this.Automator == null)
+            {
+                throw new InvalidOperationException("Automator must be set before Do() is called");
+            }
+
+            var response = string.Empty;
+            try
+            {
+                response = this.DoImpl();
+            }
+            catch (AutomationException exception)
+            {
+                response = this.JsonResponse(exception.Status, exception);
+            }
+            catch (Exception exception)
+            {
+                response = this.JsonResponse(ResponseStatus.UnknownError, exception);
+            }
+
+            return response;
         }
 
-        private TimeSpan atomExecutionTimeout = TimeSpan.FromMilliseconds(-1);
+        public Automator Automator { get; set; }
+
+        public IDictionary<string, JToken> Parameters { get; set; }
+
+        public string Session { get; set; }
 
         private static string CreateArgumentString(IEnumerable<object> args)
         {
@@ -51,10 +78,36 @@
             var browser = environment.Browser;
             var argumentString = CreateArgumentString(args);
 
-            var scriptSimplified = "(" + executedAtom + ")(" + argumentString + ");";
-            var task = browser.InvokeScriptAsync("eval", new[] { scriptSimplified }).AsTask();
-            task.Wait(this.atomExecutionTimeout);
-            return task.Result;
+            var script = "(" + executedAtom + ")(" + argumentString + ");";
+
+            string result = null;
+
+            var sync = new ManualResetEvent(false);
+
+            environment.Browser.Dispatcher.RunAsync(
+                CoreDispatcherPriority.Normal,
+                () =>
+                    {
+                        var op = browser.InvokeScriptAsync("eval", new[] { script });
+                        op.Completed = (info, status) =>
+                            {
+                                try
+                                {
+                                    result = op.GetResults();
+                                }
+                                finally
+                                {
+                                    sync.Set();
+                                }
+                            };
+                    });
+
+            if (!sync.WaitOne(this.atomExecutionTimeout))
+            {
+                throw new TimeoutException();
+            }
+
+            return result;
 
             // TODO why https://github.com/forcedotcom/windowsphonedriver used to separate invokes?
             //var script = "window.top.__wd_fn_result = (" + executedAtom + ")(" + argumentString + ");";
@@ -92,6 +145,18 @@
         protected void SetAtomExecutionTimeout(TimeSpan timeout)
         {
             this.atomExecutionTimeout = timeout;
+        }
+
+        protected abstract string DoImpl();
+
+        protected string JsonResponse(ResponseStatus status = ResponseStatus.Success, object value = null)
+        {
+            if (status != ResponseStatus.Success && value == null)
+            {
+                value = string.Format("WebDriverException {0}", Enum.GetName(typeof(ResponseStatus), status));
+            }
+
+            return JsonConvert.SerializeObject(new JsonResponse(this.Session, status, value), Formatting.Indented);
         }
     }
 }

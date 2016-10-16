@@ -7,6 +7,6 @@ APPX_PATH = r"D:\Projects\windows-universal-app-driver\Winium\TestApp\TestApp.Wi
 
 DESIRED_CAPABILITIES = {
     "app": os.path.abspath(os.path.join(BASE_DIR, APPX_PATH)),
-    "deviceName": "Emulator 8.1"
-    # "debugConnectToRunningApp": True
+    "deviceName": "Emulator 8.1",
+    "debugConnectToRunningApp": True
 }
