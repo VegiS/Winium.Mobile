@@ -1,4 +1,4 @@
-﻿// <copyright file="GetTitleCommandHandler.cs" company="Salesforce.com">
+﻿// <copyright file="GetActiveElementCommandHandler.cs" company="Salesforce.com">
 //
 // Copyright (c) 2014 Salesforce.com, Inc.
 // All rights reserved.
@@ -29,14 +29,15 @@ namespace Winium.StoreApps.InnerServer.Web.Commands
     using System.Collections.Generic;
 
     /// <summary>
-    /// Provides handling for the get title command.
+    /// Provides handling for the get active element command.
     /// </summary>
-    internal class GetTitleCommandHandler : WebCommandAdapterHandler
+    internal class GetActiveElementCommandHandler : WebCommandAdapterHandler
     {
         protected override Response Execute(CommandEnvironment environment, Dictionary<string, object> parameters)
         {
-            var title = this.EvaluateAtom(environment, "function() { if(window && window.top && window.top.document) { return window.top.document.title; } return ''; }");
-            return Response.CreateSuccessResponse(title);
+            var activeElementAtom = this.Atom;
+            var result = this.EvaluateAtom(environment, activeElementAtom);
+            return Response.FromJson(result);
         }
     }
 }

@@ -32,7 +32,7 @@ namespace Winium.StoreApps.InnerServer.Web
 
     using Winium.StoreApps.InnerServer.Element;
 
-    internal class WebContext
+    internal class CommandEnvironment
     {
         /// <summary>
         /// The key used to denote a window object.
@@ -51,7 +51,7 @@ namespace Winium.StoreApps.InnerServer.Web
 
         private readonly WiniumElement element;
 
-        public WebContext(WiniumElement element)
+        public CommandEnvironment(WiniumElement element)
         {
             this.PageLoadTimeout = -1;
             this.AsyncScriptTimeout = -1;

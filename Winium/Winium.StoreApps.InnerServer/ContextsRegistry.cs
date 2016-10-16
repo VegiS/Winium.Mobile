@@ -17,13 +17,13 @@ namespace Winium.StoreApps.InnerServer
     {
         private static int safeInstanceCount;
 
-        private readonly Dictionary<string, WebContext> contexts;
+        private readonly Dictionary<string, CommandEnvironment> contexts;
 
         public const string NativeAppContext = "NATIVE_APP";
 
         public ContextsRegistry()
         {
-            this.contexts = new Dictionary<string, WebContext>();
+            this.contexts = new Dictionary<string, CommandEnvironment>();
         }
 
         public IEnumerable<string> GetAllContexts()
@@ -42,15 +42,15 @@ namespace Winium.StoreApps.InnerServer
             }
 
             var id = GenerateId(element);
-            this.contexts.Add(id, new WebContext(element));
+            this.contexts.Add(id, new CommandEnvironment(element));
 
             return id;
         }
 
-        public WebContext GetContext(string id)
+        public CommandEnvironment GetContext(string id)
         {
             this.GetAllContexts();
-            WebContext context;
+            CommandEnvironment context;
             if (this.contexts.TryGetValue(id, out context))
             {
                 if (!context.Element.IsStale)

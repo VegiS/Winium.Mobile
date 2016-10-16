@@ -37,40 +37,35 @@ namespace Winium.StoreApps.InnerServer.Web.Commands
     /// </summary>
     internal class FindElementCommandHandler : WebCommandAdapterHandler
     {
-        /// <summary>
-        /// Executes the command.
-        /// </summary>
-        /// <param name="environment">The <see cref="CommandEnvironment"/> to use in executing the command.</param>
-        /// <param name="parameters">The <see cref="Dictionary{string, object}"/> containing the command parameters.</param>
-        /// <returns>The JSON serialized string representing the command response.</returns>
-        protected override string Execute(WebContext environment, Dictionary<string, object> parameters)
+        protected override Response Execute(CommandEnvironment environment, Dictionary<string, object> parameters)
         {
             var findElementAtom = this.Atom;
 
             object mechanism;
             if (!parameters.TryGetValue("using", out mechanism))
             {
-                return this.CreateMissingParametersResponse("using");
+                return Response.CreateMissingParametersResponse("using");
             }
 
             object criteria;
             if (!parameters.TryGetValue("value", out criteria))
             {
-                return this.CreateMissingParametersResponse("value");
+                return Response.CreateMissingParametersResponse("value");
             }
 
-            var timeout = DateTime.Now.AddMilliseconds(environment.ImplicitWaitTimeout);
+            Response response;
+            DateTime timeout = DateTime.Now.AddMilliseconds(environment.ImplicitWaitTimeout);
             do
             {
                 string result = this.EvaluateAtom(environment, findElementAtom, mechanism, criteria, null, environment.CreateFrameObject());
-                var response = ResponseFromJson(result);
+                response = Response.FromJson(result);
                 if (response.Status == ResponseStatus.Success)
                 {
                     // Return early for success
-                    var foundElement = response.Value as Dictionary<string, object>;
-                    if (foundElement != null && foundElement.ContainsKey(WebContext.ElementObjectKey))
+                    Dictionary<string, object> foundElement = response.Value as Dictionary<string, object>;
+                    if (foundElement != null && foundElement.ContainsKey(CommandEnvironment.ElementObjectKey))
                     {
-                        return this.CreateResponse(response);
+                        return response;
                     }
                 }
                 else if (response.Status != ResponseStatus.NoSuchElement)
@@ -81,13 +76,14 @@ namespace Winium.StoreApps.InnerServer.Web.Commands
                     }
 
                     // Also return early for response of not NoSuchElement.
-                    return this.CreateResponse(response);
+                    return response;
                 }
             }
             while (DateTime.Now < timeout);
 
-            var errorMessage = string.Format(CultureInfo.InvariantCulture, "No element found for {0} == '{1}'", mechanism.ToString(), criteria.ToString());
-            return this.CreateErroResponse(ResponseStatus.NoSuchElement, errorMessage);
+            string errorMessage = string.Format(CultureInfo.InvariantCulture, "No element found for {0} == '{1}'", mechanism.ToString(), criteria.ToString());
+            response = Response.CreateErrorResponse(ResponseStatus.NoSuchElement, errorMessage);
+            return response;
         }
     }
 }

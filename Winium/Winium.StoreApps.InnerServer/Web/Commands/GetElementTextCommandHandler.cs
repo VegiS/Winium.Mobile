@@ -33,17 +33,17 @@ namespace Winium.StoreApps.InnerServer.Web.Commands
     /// </summary>
     internal class GetElementTextCommandHandler : WebCommandAdapterHandler
     {
-        protected override string Execute(WebContext environment, Dictionary<string, object> parameters)
+        protected override Response Execute(CommandEnvironment environment, Dictionary<string, object> parameters)
         {
             var getTextAtom = this.Atom;
             object element;
             if (!parameters.TryGetValue("ID", out element))
             {
-                return this.CreateMissingParametersResponse("ID");
+                return Response.CreateMissingParametersResponse("ID");
             }
 
             var result = this.EvaluateAtom(environment, getTextAtom, element, environment.CreateFrameObject());
-            return this.CreateResponse(ResponseFromJson(result));
+            return Response.FromJson(result);
         }
     }
 }

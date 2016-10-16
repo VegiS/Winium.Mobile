@@ -1,15 +1,15 @@
 ﻿namespace Winium.StoreApps.InnerServer.Web.Commands
 {
-    internal class GetPageSourceCommandHandler : WebCommandHandler
+    using System.Collections.Generic;
+
+    internal class GetPageSourceCommandHandler : WebCommandAdapterHandler
     {
-        protected override string DoImpl()
+        protected override Response Execute(CommandEnvironment environment, Dictionary<string, object> parameters)
         {
-            var environment = this.Context;
-
-               const string Script = "return document.documentElement.outerHTML;";
-
-                var result = this.EvaluateAtom(environment, this.Atom, Script, new object[] { }, environment.CreateFrameObject());
-                return result;
-            }
+            var executeScriptAtom = this.Atom;
+            string script = "return document.documentElement.outerHTML;";
+            string result = this.EvaluateAtom(environment, executeScriptAtom, script, new object[] { }, environment.CreateFrameObject());
+            return Response.FromJson(result);
+        }
     }
 }

@@ -22,7 +22,7 @@
     {
         private TimeSpan atomExecutionTimeout = TimeSpan.FromMilliseconds(-1);
 
-        public WebContext Context { get; set; }
+        public CommandEnvironment Context { get; set; }
 
         public string Atom { get; set; }
 
@@ -73,7 +73,7 @@
             return builder.ToString();
         }
 
-        protected string EvaluateAtom(WebContext environment, string executedAtom, params object[] args)
+        protected string EvaluateAtom(CommandEnvironment environment, string executedAtom, params object[] args)
         {
             var browser = environment.Browser;
             var argumentString = CreateArgumentString(args);
