@@ -12,7 +12,12 @@
 
         protected override string DoImpl()
         {
-            var rv = this.Execute(this.Context, this.Parameters.ToDictionary(x => x.Key, x => x.Value as object));
+            var parameters = this.Parameters.ToDictionary(x => x.Key, x => x.Value as object);
+            if (this.Parameters.ContainsKey("ID"))
+            {
+                parameters["ID"] = new Dictionary<string, string> { { "ELEMENT", this.Parameters["ID"].ToObject<string>() } };
+            }
+            var rv = this.Execute(this.Context, parameters);
 
             return this.JsonResponse(rv.Status, rv.Value);
         }

@@ -141,6 +141,10 @@
             {
                 commandToExecute = new GetActiveElementCommandHandler();
             }
+            else if (command.Equals(DriverCommand.ClickElement))
+            {
+                commandToExecute = new ClickElementCommandHandler();
+            }
             else
             {
                 throw new NotImplementedException("Not implemented: " + command);

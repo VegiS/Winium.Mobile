@@ -57,12 +57,12 @@ namespace Winium.StoreApps.InnerServer.Web.Commands
             DateTime timeout = DateTime.Now.AddMilliseconds(environment.ImplicitWaitTimeout);
             do
             {
-                string result = this.EvaluateAtom(environment, findElementAtom, mechanism, criteria, null, environment.CreateFrameObject());
+                var result = this.EvaluateAtom(environment, findElementAtom, mechanism, criteria, null, environment.CreateFrameObject());
                 response = Response.FromJson(result);
                 if (response.Status == ResponseStatus.Success)
                 {
                     // Return early for success
-                    Dictionary<string, object> foundElement = response.Value as Dictionary<string, object>;
+                    var foundElement = response.Value as Dictionary<string, object>;
                     if (foundElement != null && foundElement.ContainsKey(CommandEnvironment.ElementObjectKey))
                     {
                         return response;
