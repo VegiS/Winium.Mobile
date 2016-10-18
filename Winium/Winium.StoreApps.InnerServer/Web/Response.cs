@@ -38,8 +38,6 @@ namespace Winium.StoreApps.InnerServer.Web
     /// </summary>
     public class Response
     {
-        private int status;
-
         /// <summary>
         /// Gets or sets the status of the response.
         /// </summary>

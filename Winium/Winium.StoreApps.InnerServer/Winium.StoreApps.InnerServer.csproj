@@ -96,7 +96,6 @@
     <Compile Include="Web\Commands\GetElementTextCommandHandler.cs" />
     <Compile Include="Web\Commands\WebCommandAdapterHandler.cs" />
     <Compile Include="Web\CommandEnvironment.cs" />
-    <Compile Include="Web\Commands\WebCommandHandler.cs" />
     <Compile Include="Web\Commands\GetPageSourceCommandHandler.cs" />
   </ItemGroup>
   <ItemGroup>

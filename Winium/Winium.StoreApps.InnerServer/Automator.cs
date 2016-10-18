@@ -117,7 +117,7 @@
         private ICommandBase GetWebCommandToExecute(Command request)
         {
             var command = request.Name;
-            WebCommandHandler commandToExecute;
+            WebCommandAdapterHandler commandToExecute;
 
             var context = this.ContextsRegistry.GetContext(this.CurrentContext);
 
